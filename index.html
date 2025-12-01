@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seguimiento Alumnos - Oficios</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .week-nav {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            padding: 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .week-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: white;
+            color: #64748b;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .week-btn.active {
+            background: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+        }
+
+        .day-indicator {
+            padding: 15px 20px;
+            background: #f1f5f9;
+            text-align: center;
+            font-weight: 600;
+            color: #475569;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .students-list {
+            padding: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .student-card {
+            background: white;
+            border: 2px solid #f1f5f9;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .student-card:hover {
+            border-color: #e2e8f0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .student-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .student-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .student-trade {
+            background: #f1f5f9;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #64748b;
+        }
+
+        .evaluation-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .category {
+            text-align: center;
+        }
+
+        .category-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .traffic-light {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .light {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .light:hover {
+            transform: scale(1.1);
+        }
+
+        .light.green {
+            background: #10b981;
+        }
+
+        .light.yellow {
+            background: #f59e0b;
+        }
+
+        .light.red {
+            background: #ef4444;
+        }
+
+        .light.selected {
+            border-color: #1e293b;
+            box-shadow: 0 0 0 2px white, 0 0 0 4px currentColor;
+        }
+
+        .actions {
+            padding: 20px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4338ca;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #64748b;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            border-color: #4f46e5;
+            color: #4f46e5;
+        }
+
+        .add-student-form {
+            padding: 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: none;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto auto;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .form-input {
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+        }
+
+        .form-select {
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            background: white;
+        }
+
+        /* Estados de evaluación */
+        .evaluation-badge {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-left: 5px;
+        }
+
+        .evaluated .student-name::after {
+            content: "✓";
+            color: #10b981;
+            margin-left: 8px;
+            font-weight: bold;
+        }
+
+        /* Scrollbar personalizado */
+        .students-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .students-list::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        .students-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .students-list::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Seguimiento Alumnos</h1>
+            <p>Evaluación express - 3 clicks por alumno</p>
+        </div>
+
+        <div class="week-nav">
+            <button class="week-btn active" data-week="1">Semana 1</button>
+            <button class="week-btn" data-week="2">Semana 2</button>
+            <button class="week-btn" data-week="3">Semana 3</button>
+            <button class="week-btn" data-week="4">Semana 4</button>
+        </div>
+
+        <div class="day-indicator">
+            Día <span id="current-day">1</span> de 5
+        </div>
+
+        <div class="add-student-form" id="add-student-form">
+            <div class="form-grid">
+                <input type="text" class="form-input" id="student-name" placeholder="Nombre del alumno">
+                <select class="form-select" id="student-trade">
+                    <option>Electricidad</option>
+                    <option>Fontanería</option>
+                    <option>Carpintería</option>
+                    <option>Albañilería</option>
+                    <option>Pintura</option>
+                </select>
+                <button class="btn btn-primary" onclick="addStudent()">Agregar</button>
+                <button class="btn btn-secondary" onclick="hideAddForm()">Cancelar</button>
+            </div>
+        </div>
+
+        <div class="students-list" id="students-list">
+            <!-- Los alumnos se cargarán aquí -->
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-secondary" onclick="showAddForm()">➕ Agregar Alumno</button>
+            <button class="btn btn-primary" onclick="generateComments()">📝 Generar Comentarios</button>
+        </div>
+    </div>
+
+    <script>
+        // Datos iniciales de ejemplo (luego se reemplazan con los reales)
+        let students = [
+            { id: 1, name: "Juan Pérez", trade: "Electricidad" },
+            { id: 2, name: "María García", trade: "Fontanería" },
+            { id: 3, name: "Carlos López", trade: "Carpintería" },
+            { id: 4, name: "Ana Martínez", trade: "Albañilería" },
+            { id: 5, name: "David Fernández", trade: "Pintura" }
+        ];
+
+        let evaluations = {};
+        let currentWeek = 1;
+        let currentDay = 1;
+
+        // Inicializar la aplicación
+        function init() {
+            loadFromStorage();
+            renderStudents();
+            setupEventListeners();
+        }
+
+        // Cargar datos del localStorage
+        function loadFromStorage() {
+            const savedStudents = localStorage.getItem('students');
+            const savedEvaluations = localStorage.getItem('evaluations');
+            
+            if (savedStudents) {
+                students = JSON.parse(savedStudents);
+            }
+            if (savedEvaluations) {
+                evaluations = JSON.parse(savedEvaluations);
+            }
+        }
+
+        // Guardar datos en localStorage
+        function saveToStorage() {
+            localStorage.setItem('students', JSON.stringify(students));
+            localStorage.setItem('evaluations', JSON.stringify(evaluations));
+        }
+
+        // Renderizar lista de estudiantes
+        function renderStudents() {
+            const container = document.getElementById('students-list');
+            container.innerHTML = '';
+
+            students.forEach(student => {
+                const studentEval = getStudentEvaluation(student.id, currentWeek, currentDay);
+                const isEvaluated = studentEval && Object.keys(studentEval).length === 3;
+                
+                const studentCard = document.createElement('div');
+                studentCard.className = `student-card ${isEvaluated ? 'evaluated' : ''}`;
+                studentCard.innerHTML = `
+                    <div class="student-header">
+                        <div class="student-name">${student.name}</div>
+                        <div class="student-trade">${student.trade}</div>
+                    </div>
+                    <div class="evaluation-grid">
+                        <div class="category">
+                            <div class="category-name">🔧 Técnicos</div>
+                            <div class="traffic-light">
+                                <div class="light green ${studentEval?.technical === 'green' ? 'selected' : ''}" 
+                                     onclick="evaluateStudent(${student.id}, 'technical', 'green')"></div>
+                                <div class="light yellow ${studentEval?.technical === 'yellow' ? 'selected' : ''}" 
+                                     onclick="evaluateStudent(${student.id}, 'technical', 'yellow')"></div>
+                                <div class="light red ${studentEval?.technical === 'red' ? 'selected' : ''}" 
+                                     onclick="evaluateStudent(${student.id}, 'technical', 'red')"></div>
+                            </div>
+                        </div>
+                        <div class="category">
+                            <div class="category-name">👥 Actitud</div>
+                            <div class="traffic-light">
+                                <div class="light green ${studentEval?.attitude === 'green' ? 'selected' : ''}" 
+                                     onclick="evaluateStudent(${student.id}, 'attitude', 'green')"></div>
+                                <div class="light yellow ${studentEval?.attitude === 'yellow' ? 'selected' : ''}" 
+                                     onclick="evaluateStudent(${student.id}, 'attitude', 'yellow')"></div>
+                                <div class="light red ${studentEval?.attitude === 'red' ? 'selected' : ''}" 
+                                     onclick="evaluateStudent(${student.id}, 'attitude', 'red')"></div>
+                            </div>
+                        </div>
+                        <div class="category">
+                            <div class="category-name">📈 Progreso</div>
+                            <div class="traffic-light">
+                                <div class="light green ${studentEval?.progress === 'green' ? 'selected' : ''}" 
+                                     onclick="evaluateStudent(${student.id}, 'progress', 'green')"></div>
+                                <div class="light yellow ${studentEval?.progress === 'yellow' ? 'selected' : ''}" 
+                                     onclick="evaluateStudent(${student.id}, 'progress', 'yellow')"></div>
+                                <div class="light red ${studentEval?.progress === 'red' ? 'selected' : ''}" 
+                                     onclick="evaluateStudent(${student.id}, 'progress', 'red')"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(studentCard);
+            });
+        }
+
+        // Evaluar a un estudiante
+        function evaluateStudent(studentId, category, value) {
+            const key = `${studentId}-w${currentWeek}-d${currentDay}`;
+            if (!evaluations[key]) {
+                evaluations[key] = {};
+            }
+            evaluations[key][category] = value;
+            saveToStorage();
+            renderStudents();
+        }
+
+        // Obtener evaluación de un estudiante
+        function getStudentEvaluation(studentId, week, day) {
+            const key = `${studentId}-w${week}-d${day}`;
+            return evaluations[key] || {};
+        }
+
+        // Configurar event listeners
+        function setupEventListeners() {
+            // Botones de semana
+            document.querySelectorAll('.week-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.week-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentWeek = parseInt(e.target.dataset.week);
+                    currentDay = 1;
+                    document.getElementById('current-day').textContent = currentDay;
+                    renderStudents();
+                });
+            });
+        }
+
+        // Mostrar formulario para agregar alumno
+        function showAddForm() {
+            document.getElementById('add-student-form').style.display = 'block';
+        }
+
+        // Ocultar formulario
+        function hideAddForm() {
+            document.getElementById('add-student-form').style.display = 'none';
+            document.getElementById('student-name').value = '';
+        }
+
+        // Agregar nuevo alumno
+        function addStudent() {
+            const name = document.getElementById('student-name').value.trim();
+            const trade = document.getElementById('student-trade').value;
+            
+            if (name) {
+                const newStudent = {
+                    id: Date.now(),
+                    name: name,
+                    trade: trade
+                };
+                students.push(newStudent);
+                saveToStorage();
+                renderStudents();
+                hideAddForm();
+            }
+        }
+
+        // Generar comentarios
+        function generateComments() {
+            let comments = "📊 EVALUACIÓN SEMANAL - SEMANA " + currentWeek + "\n\n";
+            
+            students.forEach(student => {
+                const studentEval = getStudentEvaluation(student.id, currentWeek, currentDay);
+                comments += `👤 ${student.name} - ${student.trade}\n`;
+                
+                if (studentEval.technical) {
+                    comments += `🔧 Técnicos: ${getEvaluationText('technical', studentEval.technical)}\n`;
+                }
+                if (studentEval.attitude) {
+                    comments += `👥 Actitud: ${getEvaluationText('attitude', studentEval.attitude)}\n`;
+                }
+                if (studentEval.progress) {
+                    comments += `📈 Progreso: ${getEvaluationText('progress', studentEval.progress)}\n`;
+                }
+                
+                comments += "\n" + "─".repeat(40) + "\n\n";
+            });
+
+            // Mostrar en un alert (luego podemos mejorarlo)
+            alert(comments);
+        }
+
+        // Obtener texto descriptivo de la evaluación
+        function getEvaluationText(category, value) {
+            const texts = {
+                technical: {
+                    green: "Destaca en habilidades técnicas",
+                    yellow: "Progresa adecuadamente",
+                    red: "Necesita mejorar aspectos técnicos"
+                },
+                attitude: {
+                    green: "Actitud excelente y participativa",
+                    yellow: "Buen comportamiento general",
+                    red: "Requiere atención en actitud"
+                },
+                progress: {
+                    green: "Evolución muy positiva",
+                    yellow: "Progreso constante",
+                    red: "Necesita refuerzo en el aprendizaje"
+                }
+            };
+            return texts[category][value];
+        }
+
+        // Cambiar día actual
+        function changeDay(direction) {
+            currentDay = Math.max(1, Math.min(5, currentDay + direction));
+            document.getElementById('current-day').textContent = currentDay;
+            renderStudents();
+        }
+
+        // Inicializar cuando se carga la página
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
